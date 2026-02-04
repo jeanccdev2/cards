@@ -30,6 +30,7 @@ func Connect() {
 func AutoMigrate() error {
 	return DB.AutoMigrate(
 		&models.Card{},
+		&models.User{},
 	)
 }
 

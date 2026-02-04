@@ -33,7 +33,6 @@ func (h *authHandler) Register(c *gin.Context) {
 		Name:     payload.Name,
 		Email:    payload.Email,
 		Password: payload.Password,
-		Document: payload.Document,
 	})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, types.NewApiResponse(http.StatusBadRequest, "Registration failed", nil, err.Error()))

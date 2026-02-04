@@ -6,7 +6,8 @@ import (
 )
 
 func RegisterCardsRoutes(appGroup *gin.RouterGroup, db *gorm.DB) {
-	service := NewCardsService(db)
+	repository := NewCardsRepository(db)
+	service := NewCardsService(repository)
 	handler := NewCardsHandler(service)
 
 	cardsGroup := appGroup.Group("/cards")

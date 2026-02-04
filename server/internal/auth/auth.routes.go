@@ -6,7 +6,8 @@ import (
 )
 
 func RegisterAuthRoutes(appGroup *gin.RouterGroup, db *gorm.DB) {
-	service := NewAuthService(db)
+	repository := NewAuthRepository(db)
+	service := NewAuthService(repository)
 	handler := NewAuthHandler(service)
 
 	authGroup := appGroup.Group("/auth")

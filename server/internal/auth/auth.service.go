@@ -3,12 +3,12 @@ package auth
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 
 	"cards/internal/models"
 )
@@ -21,18 +21,18 @@ type AuthService interface {
 }
 
 type authService struct {
-	DB        *gorm.DB
-	jwtSecret []byte
+	repository AuthRepository
+	jwtSecret  []byte
 }
 
-func NewAuthService(db *gorm.DB) AuthService {
+func NewAuthService(repository AuthRepository) AuthService {
 	secret := os.Getenv("JWT_SECRET")
-	return &authService{DB: db, jwtSecret: []byte(secret)}
+	return &authService{repository: repository, jwtSecret: []byte(secret)}
 }
 
 func (s *authService) Register(input RegisterRequestDTO) (*models.User, error) {
-	var existing models.User
-	if err := s.DB.Where("email = ?", input.Email).First(&existing).Error; err == nil {
+	_, err := s.repository.FindUserByEmail(input.Email)
+	if err == nil {
 		return nil, errors.New("email already registered")
 	}
 
@@ -41,7 +41,7 @@ func (s *authService) Register(input RegisterRequestDTO) (*models.User, error) {
 		Email:    input.Email,
 		Password: input.Password,
 	}
-	if err := s.DB.Create(&user).Error; err != nil {
+	if err := s.repository.SaveUser(&user); err != nil {
 		return nil, err
 	}
 
@@ -49,12 +49,9 @@ func (s *authService) Register(input RegisterRequestDTO) (*models.User, error) {
 }
 
 func (s *authService) Login(email, password string) (*LoginResponseDTO, error) {
-	var user models.User
-	if err := s.DB.Where("email = ?", email).First(&user).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("invalid credentials")
-		}
-		return nil, err
+	user, err := s.repository.FindUserByEmail(email)
+	if err != nil {
+		return nil, errors.New("user not found")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
@@ -71,7 +68,15 @@ func (s *authService) Login(email, password string) (*LoginResponseDTO, error) {
 		return nil, err
 	}
 
-	return &LoginResponseDTO{Token: signed, User: &user}, nil
+	log.Printf("User logged in successfully: %s", user.Email)
+	log.Printf("JWT Token: %s", signed)
+
+	return &LoginResponseDTO{Token: signed, User: &UserResponseDTO{
+		ID:        user.ID.String(),
+		Name:      user.Name,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt.Format(time.RFC3339),
+	}}, nil
 }
 
 func (s *authService) ValidateToken(tokenString string) (*jwt.Token, error) {
@@ -88,9 +93,10 @@ func (s *authService) ValidateToken(tokenString string) (*jwt.Token, error) {
 }
 
 func (s *authService) GetUser(id string) (*models.User, error) {
-	var user models.User
-	if err := s.DB.Preload("Seller").Where("id = ?", id).First(&user).Error; err != nil {
+	user, err := s.repository.FindUserByID(id)
+	if err != nil {
 		return nil, err
 	}
-	return &user, nil
+
+	return user, nil
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cards/internal/auth"
 	"cards/internal/cards"
 	"cards/internal/database"
 	"log"
@@ -35,6 +36,7 @@ func main() {
 	app.Use(cors.New(config))
 	appGroupV1 := app.Group("/api/v1")
 	cards.RegisterCardsRoutes(appGroupV1, db)
+	auth.RegisterAuthRoutes(appGroupV1, db)
 
 	// Start server
 	port := os.Getenv("PORT")
