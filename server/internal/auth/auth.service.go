@@ -2,8 +2,6 @@ package auth
 
 import (
 	"errors"
-	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -16,7 +14,6 @@ import (
 type AuthService interface {
 	Register(input RegisterRequestDTO) (*models.User, error)
 	Login(email, password string) (*LoginResponseDTO, error)
-	ValidateToken(tokenString string) (*jwt.Token, error)
 	GetUser(id string) (*models.User, error)
 }
 
@@ -68,28 +65,12 @@ func (s *authService) Login(email, password string) (*LoginResponseDTO, error) {
 		return nil, err
 	}
 
-	log.Printf("User logged in successfully: %s", user.Email)
-	log.Printf("JWT Token: %s", signed)
-
 	return &LoginResponseDTO{Token: signed, User: &UserResponseDTO{
 		ID:        user.ID.String(),
 		Name:      user.Name,
 		Email:     user.Email,
 		CreatedAt: user.CreatedAt.Format(time.RFC3339),
 	}}, nil
-}
-
-func (s *authService) ValidateToken(tokenString string) (*jwt.Token, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return s.jwtSecret, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return token, nil
 }
 
 func (s *authService) GetUser(id string) (*models.User, error) {

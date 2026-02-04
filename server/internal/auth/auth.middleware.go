@@ -9,7 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func AuthMiddleware(authService AuthService) gin.HandlerFunc {
+func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -24,9 +24,9 @@ func AuthMiddleware(authService AuthService) gin.HandlerFunc {
 		}
 
 		tokenString := parts[1]
-		token, err := authService.ValidateToken(tokenString)
+		token, err := ValidateJWTToken(tokenString)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, types.NewApiResponse(http.StatusUnauthorized, "", nil, "Invalid or expired token"))
+			c.AbortWithStatusJSON(http.StatusUnauthorized, types.NewApiResponse(http.StatusUnauthorized, "Invalid or expired token", nil, err))
 			return
 		}
 

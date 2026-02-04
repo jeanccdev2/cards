@@ -2,7 +2,6 @@ package auth
 
 import (
 	"cards/internal/models"
-	"log"
 
 	"gorm.io/gorm"
 )
@@ -23,9 +22,7 @@ func NewAuthRepository(db *gorm.DB) AuthRepository {
 
 func (r *authRepository) FindUserByEmail(email string) (*models.User, error) {
 	var user models.User
-	log.Printf("Finding user by email: %s", email)
 	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
-		log.Printf("Error finding user by email %s: %v", email, err)
 		return nil, err
 	}
 
