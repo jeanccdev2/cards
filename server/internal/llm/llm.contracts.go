@@ -16,7 +16,7 @@ type Message struct {
 }
 
 type LLMService interface {
-	Chat(ctx context.Context, messages []Message) (string, error)
+	GenerateMultipleCards(ctx context.Context, messages []Message) (*CardsResponse, error)
 }
 
 type CardsResponse struct {

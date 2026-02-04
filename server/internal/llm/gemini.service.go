@@ -35,10 +35,10 @@ func getLLMClient(ctx context.Context) *genai.Client {
 	return client
 }
 
-func (s *geminiService) Chat(
+func (s *geminiService) GenerateMultipleCards(
 	ctx context.Context,
 	messages []Message,
-) (string, error) {
+) (*CardsResponse, error) {
 
 	resp, err := s.client.Models.GenerateContent(
 		ctx,
@@ -90,15 +90,16 @@ func (s *geminiService) Chat(
 		},
 	)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if len(resp.Candidates) == 0 ||
 		len(resp.Candidates[0].Content.Parts) == 0 {
-		return "", nil
+		return nil, nil
 	}
 
-	return resp.Candidates[0].Content.Parts[0].Text, nil
+	// return resp.Candidates[0].Content.Parts[0].Text, nil
+	return nil, nil
 }
 
 func toGenaiMessages(messages []Message) []*genai.Content {

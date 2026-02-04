@@ -30,33 +30,32 @@ type OpenRouterResponse struct {
 	} `json:"choices"`
 }
 
-func (s *openrouterService) Chat(
+func (s *openrouterService) GenerateMultipleCards(
 	ctx context.Context,
 	messages []Message,
-) (string, error) {
+) (*CardsResponse, error) {
 
 	payload, err := s.buildPayload(messages)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	respBytes, err := s.doRequest(ctx, payload)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	content, err := parseOpenRouterResponse(respBytes)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	cardsResp, err := parseCardsResponse(content)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	out, _ := json.Marshal(cardsResp)
-	return string(out), nil
+	return cardsResp, nil
 }
 
 func (s *openrouterService) buildPayload(messages []Message) (map[string]interface{}, error) {

@@ -1,17 +1,20 @@
 package cards
 
 import (
+	"context"
 	"log"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
+	"cards/internal/llm"
 	"cards/internal/models"
 )
 
 type CardsService interface {
 	List(userID string) ([]models.Card, error)
 	Create(userID uuid.UUID, dto CreateCardDTO) (models.Card, error)
+	GenerateMultipleCards(userID uuid.UUID, userPrompt string) ([]SimpleCardResponseDTO, error)
 }
 
 type cardsService struct {
@@ -46,4 +49,29 @@ func (s *cardsService) Create(userID uuid.UUID, dto CreateCardDTO) (models.Card,
 	}
 
 	return card, nil
+}
+
+func (s *cardsService) GenerateMultipleCards(userID uuid.UUID, userPrompt string) ([]SimpleCardResponseDTO, error) {
+	llmService := llm.NewOpenRouterService()
+	ctx := context.Background()
+	cardsResp, err := llmService.GenerateMultipleCards(ctx, []llm.Message{
+		{
+			Role:    llm.RoleUser,
+			Content: userPrompt,
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	var simpleCards []SimpleCardResponseDTO
+	for _, card := range cardsResp.Cards {
+		simpleCards = append(simpleCards, SimpleCardResponseDTO{
+			Title:   card.Title,
+			Content: card.Content,
+		})
+	}
+
+	return simpleCards, nil
 }

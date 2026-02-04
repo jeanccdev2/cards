@@ -15,4 +15,5 @@ func RegisterCardsRoutes(appGroup *gin.RouterGroup, db *gorm.DB) {
 	cardsGroup.Use(auth.AuthMiddleware())
 	cardsGroup.GET("/list", handler.List)
 	cardsGroup.POST("/create", handler.Create)
+	cardsGroup.POST("/generate_multiple_cards", handler.GenerateMultipleCards)
 }
