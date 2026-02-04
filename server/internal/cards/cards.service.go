@@ -1,6 +1,9 @@
 package cards
 
 import (
+	"log"
+
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 
 	"cards/internal/models"
@@ -8,6 +11,7 @@ import (
 
 type CardsService interface {
 	List(userID string) ([]models.Card, error)
+	Create(userID uuid.UUID, dto CreateCardDTO) (models.Card, error)
 }
 
 type cardsService struct {
@@ -26,4 +30,20 @@ func (s *cardsService) List(userID string) ([]models.Card, error) {
 	}
 
 	return cards, nil
+}
+
+func (s *cardsService) Create(userID uuid.UUID, dto CreateCardDTO) (models.Card, error) {
+	log.Printf("Creating card for user %s with title %s", userID, dto.Title)
+	card := models.Card{
+		Title:   dto.Title,
+		Content: dto.Content,
+		Status:  string(CardStatusUndone),
+		UserID:  userID,
+	}
+
+	if err := s.Repository.Create(&card); err != nil {
+		return models.Card{}, err
+	}
+
+	return card, nil
 }

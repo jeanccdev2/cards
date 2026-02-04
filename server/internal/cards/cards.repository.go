@@ -8,6 +8,7 @@ import (
 
 type CardsRepository interface {
 	ListByUserID(string) ([]models.Card, error)
+	Create(*models.Card) error
 }
 
 type cardsRepository struct {
@@ -24,4 +25,8 @@ func (r *cardsRepository) ListByUserID(userID string) ([]models.Card, error) {
 		return nil, err
 	}
 	return cards, nil
+}
+
+func (r *cardsRepository) Create(card *models.Card) error {
+	return r.db.Create(card).Error
 }
