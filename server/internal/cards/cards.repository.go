@@ -9,6 +9,7 @@ import (
 type CardsRepository interface {
 	ListByUserID(string) ([]models.Card, error)
 	Create(*models.Card) error
+	CreateMultiple([]models.Card) error
 }
 
 type cardsRepository struct {
@@ -29,4 +30,8 @@ func (r *cardsRepository) ListByUserID(userID string) ([]models.Card, error) {
 
 func (r *cardsRepository) Create(card *models.Card) error {
 	return r.db.Create(card).Error
+}
+
+func (r *cardsRepository) CreateMultiple(cards []models.Card) error {
+	return r.db.Create(&cards).Error
 }

@@ -2,7 +2,6 @@ package cards
 
 import (
 	"context"
-	"log"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -14,6 +13,7 @@ import (
 type CardsService interface {
 	List(userID string) ([]models.Card, error)
 	Create(userID uuid.UUID, dto CreateCardDTO) (models.Card, error)
+	CreateMultiple(userID uuid.UUID, dto []CreateCardDTO) ([]models.Card, error)
 	GenerateMultipleCards(userID uuid.UUID, userPrompt string) ([]SimpleCardResponseDTO, error)
 }
 
@@ -36,7 +36,6 @@ func (s *cardsService) List(userID string) ([]models.Card, error) {
 }
 
 func (s *cardsService) Create(userID uuid.UUID, dto CreateCardDTO) (models.Card, error) {
-	log.Printf("Creating card for user %s with title %s", userID, dto.Title)
 	card := models.Card{
 		Title:   dto.Title,
 		Content: dto.Content,
@@ -49,6 +48,25 @@ func (s *cardsService) Create(userID uuid.UUID, dto CreateCardDTO) (models.Card,
 	}
 
 	return card, nil
+}
+
+func (s *cardsService) CreateMultiple(userID uuid.UUID, dto []CreateCardDTO) ([]models.Card, error) {
+	var cards []models.Card
+	for _, cardDTO := range dto {
+		card := models.Card{
+			Title:   cardDTO.Title,
+			Content: cardDTO.Content,
+			Status:  string(CardStatusUndone),
+			UserID:  userID,
+		}
+		cards = append(cards, card)
+	}
+
+	if err := s.Repository.CreateMultiple(cards); err != nil {
+		return nil, err
+	}
+
+	return cards, nil
 }
 
 func (s *cardsService) GenerateMultipleCards(userID uuid.UUID, userPrompt string) ([]SimpleCardResponseDTO, error) {
