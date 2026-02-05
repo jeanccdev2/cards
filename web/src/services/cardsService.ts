@@ -158,7 +158,7 @@ export type CreateMultipleCardsResponse = {
 };
 
 async function createMultipleCards(
-  cards: Card[],
+  cards: SimpleCard[],
 ): Promise<CreateMultipleCardsResponse> {
   try {
     const { data } = await api.post<ApiResponse<Card[]>>(

@@ -42,20 +42,6 @@ const Dashboard = () => {
       .then((response) => setCards(response.cards || []));
   };
 
-  const handleCardsGenerated = async (newCards: Card[]) => {
-    const response = await cardsService.createMultipleCards(cards);
-
-    if (!response.success) {
-      toast.error(response.error);
-      return;
-    }
-
-    listCards();
-    toast.success(
-      `${newCards.length} card${newCards.length > 1 ? "s" : ""} criado${newCards.length > 1 ? "s" : ""} com sucesso!`,
-    );
-  };
-
   useEffect(() => {
     listCards();
   }, []);
@@ -148,7 +134,7 @@ const Dashboard = () => {
       <RecordingModal
         open={isRecordingModalOpen}
         onOpenChange={setIsRecordingModalOpen}
-        onCardsGenerated={handleCardsGenerated}
+        onCardsGenerated={listCards}
       />
     </>
   );
