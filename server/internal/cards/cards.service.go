@@ -13,6 +13,7 @@ import (
 
 type CardsService interface {
 	List(userID uuid.UUID) ([]models.Card, error)
+	GetByID(cardID uuid.UUID) (models.Card, error)
 	Create(userID uuid.UUID, dto CreateCardDTO) (models.Card, error)
 	CreateMultiple(userID uuid.UUID, dto []CreateCardDTO) ([]models.Card, error)
 	GenerateMultipleCards(userID uuid.UUID, userPrompt string) ([]SimpleCardResponseDTO, error)
@@ -35,6 +36,14 @@ func (s *cardsService) List(userID uuid.UUID) ([]models.Card, error) {
 	}
 
 	return cards, nil
+}
+
+func (s *cardsService) GetByID(cardID uuid.UUID) (models.Card, error) {
+	card, err := s.Repository.FindByID(cardID)
+	if err != nil {
+		return models.Card{}, err
+	}
+	return card, nil
 }
 
 func (s *cardsService) Create(userID uuid.UUID, dto CreateCardDTO) (models.Card, error) {

@@ -18,10 +18,6 @@ export type LoginResponse = {
   error?: string;
 };
 
-// Simula delay de rede
-const simulateNetworkDelay = (ms: number = 800) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
-
 async function login({
   email,
   password,

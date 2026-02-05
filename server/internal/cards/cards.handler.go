@@ -11,6 +11,7 @@ import (
 
 type CardsHandler interface {
 	List(c *gin.Context)
+	GetByID(c *gin.Context)
 	Create(c *gin.Context)
 	CreateMultiple(c *gin.Context)
 	GenerateMultipleCards(c *gin.Context)
@@ -40,6 +41,24 @@ func (h *cardsHandler) List(c *gin.Context) {
 
 	c.JSON(http.StatusOK, types.NewApiResponse(http.StatusOK, "Cards listed successfully", cards, nil))
 }
+
+func (h *cardsHandler) GetByID(c *gin.Context) {
+	cardID := c.Param("cardID")
+	if cardID == "" {
+		c.JSON(http.StatusBadRequest, types.NewApiResponse(http.StatusBadRequest, "Card ID is required", nil, "Card ID is empty"))
+		return
+	}
+
+	card, err := h.Service.GetByID(uuid.MustParse(cardID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, types.NewApiResponse(http.StatusInternalServerError, "Failed to get card", nil, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, types.NewApiResponse(http.StatusOK, "Card retrieved successfully", card, nil))
+}
+
+
 
 func (h *cardsHandler) Create(c *gin.Context) {
 	userID := c.GetString("userID")

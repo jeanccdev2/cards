@@ -11,7 +11,7 @@
      label: 'Feito',
      className: 'bg-status-done/10 text-status-done border-status-done/20',
    },
-   pending: {
+   undone: {
      label: 'Pendente',
      className: 'bg-status-pending/10 text-status-pending border-status-pending/20',
    },
@@ -22,6 +22,7 @@
  };
  
  export const StatusBadge = ({ status, className }: StatusBadgeProps) => {
+  console.log(status);
    const config = statusConfig[status];
    
    return (

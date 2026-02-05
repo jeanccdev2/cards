@@ -1,14 +1,16 @@
-export type CardStatus = "done" | "pending" | "doing";
+export type CardStatus = "done" | "undone" | "doing";
 
 export type Card = {
   id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: Date;
+  updated_at: Date;
   title: string;
   content: string;
   status: CardStatus;
-  userId: string;
+  user_id: string;
 };
+
+export type SimpleCard = Pick<Card, "title" | "content" | "status">;
 
 export type User = {
   id: string;

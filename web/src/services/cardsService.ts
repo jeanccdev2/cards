@@ -1,125 +1,189 @@
-import { Card, CardStatus } from '@/types';
-import { mockCards, generateMockCardsFromVoice } from '@/lib/mockData';
+import { ApiResponse, Card, CardStatus, SimpleCard } from "@/types";
+import { mockCards, generateMockCardsFromVoice } from "@/lib/mockData";
+import { api } from "@/config/api";
 
-export interface CreateCardRequest {
-  title: string;
-  content: string;
-  status: CardStatus;
+export type CardsListResponse = {
+  success: boolean;
+  cards?: Card[];
+  error?: string;
+};
+
+async function fetchCards(): Promise<CardsListResponse> {
+  try {
+    const { data } = await api.get<ApiResponse<Card[]>>(`/cards/list`);
+
+    return {
+      success: true,
+      cards: data?.data || [],
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: "Erro ao buscar cards",
+    };
+  }
 }
 
-export interface UpdateCardRequest {
-  title?: string;
-  content?: string;
-  status?: CardStatus;
-}
-
-export interface CardResponse {
+export type CardByIdResponse = {
   success: boolean;
   card?: Card;
   error?: string;
+};
+
+async function getCardById(id: string): Promise<CardByIdResponse> {
+  try {
+    const { data } = await api.get<ApiResponse<Card>>(`/cards/by_id/${id}`);
+
+    return {
+      success: true,
+      card: data.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: "Erro ao buscar card",
+    };
+  }
 }
 
-export interface CardsListResponse {
+export type CreateCardRequest = Omit<SimpleCard, "status">;
+
+export type CreateCardResponse = {
   success: boolean;
-  cards: Card[];
+  card?: Card;
   error?: string;
+};
+
+async function createCard(
+  card: CreateCardRequest,
+): Promise<CreateCardResponse> {
+  try {
+    const { data } = await api.post<ApiResponse<Card>>(`/cards/create`, card);
+
+    return {
+      success: true,
+      card: data?.data || undefined,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: "Erro ao criar card",
+    };
+  }
 }
 
-// Simula delay de rede
-const simulateNetworkDelay = (ms: number = 300) => 
-  new Promise(resolve => setTimeout(resolve, ms));
+export type UpdateCardRequest = Partial<SimpleCard>;
 
-// Gera ID único para novos cards
-const generateCardId = () => `card-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+export type UpdateCardResponse = {
+  success: boolean;
+  card?: Card;
+  error?: string;
+};
 
-export const cardsService = {
-  async fetchCards(): Promise<CardsListResponse> {
-    await simulateNetworkDelay();
-    return { success: true, cards: mockCards };
-  },
+async function updateCard(
+  id: string,
+  card: UpdateCardRequest,
+): Promise<UpdateCardResponse> {
+  try {
+    const { data } = await api.patch<ApiResponse<Card>>(
+      `/cards/update/${id}`,
+      card,
+    );
 
-  async getCardById(id: string, cards: Card[]): Promise<CardResponse> {
-    await simulateNetworkDelay(100);
-    
-    const card = cards.find(c => c.id === id);
-    
-    if (!card) {
-      return { success: false, error: 'Card não encontrado' };
-    }
-
-    return { success: true, card };
-  },
-
-  async createCard(data: CreateCardRequest, userId: string): Promise<CardResponse> {
-    await simulateNetworkDelay();
-
-    if (!data.title?.trim() || !data.content?.trim()) {
-      return { success: false, error: 'Título e conteúdo são obrigatórios' };
-    }
-
-    const newCard: Card = {
-      id: generateCardId(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      title: data.title.trim(),
-      content: data.content.trim(),
-      status: data.status,
-      userId,
+    return {
+      success: true,
+      card: data?.data || undefined,
     };
-
-    return { success: true, card: newCard };
-  },
-
-  async updateCard(id: string, updates: UpdateCardRequest, currentCards: Card[]): Promise<CardResponse> {
-    await simulateNetworkDelay();
-
-    const existingCard = currentCards.find(c => c.id === id);
-    
-    if (!existingCard) {
-      return { success: false, error: 'Card não encontrado' };
-    }
-
-    const updatedCard: Card = {
-      ...existingCard,
-      ...updates,
-      updatedAt: new Date(),
+  } catch (error) {
+    return {
+      success: false,
+      error: "Erro ao atualizar card",
     };
+  }
+}
 
-    return { success: true, card: updatedCard };
-  },
+export type DeleteCardResponse = {
+  success: boolean;
+  error?: string;
+};
 
-  async deleteCard(id: string, currentCards: Card[]): Promise<{ success: boolean; error?: string }> {
-    await simulateNetworkDelay();
+async function deleteCard(id: string): Promise<DeleteCardResponse> {
+  try {
+    await api.delete(`/cards/update/${id}`);
 
-    const exists = currentCards.some(c => c.id === id);
-    
-    if (!exists) {
-      return { success: false, error: 'Card não encontrado' };
-    }
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: "Erro ao atualizar card",
+    };
+  }
+}
 
-    return { success: true };
-  },
+export type GenerateCardsResponse = {
+  success: boolean;
+  cards?: SimpleCard[];
+  error?: string;
+};
 
-  async generateCardsFromVoice(audioBlob?: Blob): Promise<CardsListResponse> {
-    // Simula processamento de áudio pela LLM
-    await simulateNetworkDelay(2000);
+async function generateCardsFromVoice(
+  userPrompt: string,
+): Promise<GenerateCardsResponse> {
+  try {
+    const { data } = await api.post<ApiResponse<SimpleCard[]>>(
+      `/cards/generate_multiple_cards`,
+      {
+        userPrompt,
+      },
+    );
 
-    // Mock: retorna cards gerados
-    const cards = generateMockCardsFromVoice();
-    return { success: true, cards };
-  },
+    return {
+      success: true,
+      cards: data?.data || [],
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: "Erro ao atualizar card",
+    };
+  }
+}
 
-  async createMultipleCards(cards: Card[]): Promise<CardsListResponse> {
-    await simulateNetworkDelay();
+export type CreateMultipleCardsResponse = {
+  success: boolean;
+  cards?: Card[];
+  error?: string;
+};
 
-    // Gera novos IDs e timestamps para cada card
-    const newCards = cards.map(card => ({
-      ...card,
-      id: generateCardId(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }));
+async function createMultipleCards(
+  cards: Card[],
+): Promise<CreateMultipleCardsResponse> {
+  try {
+    const { data } = await api.post<ApiResponse<Card[]>>(
+      `/cards/create_multiple_cards`,
+      cards,
+    );
 
-    return { success: true, cards: newCards };
-  },
+    return {
+      success: true,
+      cards: data?.data || [],
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: "Erro ao atualizar card",
+    };
+  }
+}
+
+export default {
+  fetchCards,
+  getCardById,
+  createCard,
+  updateCard,
+  deleteCard,
+  generateCardsFromVoice,
+  createMultipleCards,
 };
