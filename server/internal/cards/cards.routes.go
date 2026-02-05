@@ -17,4 +17,5 @@ func RegisterCardsRoutes(appGroup *gin.RouterGroup, db *gorm.DB) {
 	cardsGroup.POST("/create", handler.Create)
 	cardsGroup.POST("/generate_multiple_cards", handler.GenerateMultipleCards)
 	cardsGroup.POST("/create_multiple_cards", handler.CreateMultiple)
+	cardsGroup.PATCH("/update/:cardID", handler.Update)
 }

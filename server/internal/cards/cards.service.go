@@ -2,6 +2,7 @@ package cards
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -11,10 +12,11 @@ import (
 )
 
 type CardsService interface {
-	List(userID string) ([]models.Card, error)
+	List(userID uuid.UUID) ([]models.Card, error)
 	Create(userID uuid.UUID, dto CreateCardDTO) (models.Card, error)
 	CreateMultiple(userID uuid.UUID, dto []CreateCardDTO) ([]models.Card, error)
 	GenerateMultipleCards(userID uuid.UUID, userPrompt string) ([]SimpleCardResponseDTO, error)
+	Update(userID uuid.UUID, cardID uuid.UUID, dto UpdateCardDTO) (SimpleCardResponseDTO, error)
 }
 
 type cardsService struct {
@@ -26,7 +28,7 @@ func NewCardsService(repository CardsRepository) CardsService {
 	return &cardsService{Repository: repository}
 }
 
-func (s *cardsService) List(userID string) ([]models.Card, error) {
+func (s *cardsService) List(userID uuid.UUID) ([]models.Card, error) {
 	cards, err := s.Repository.ListByUserID(userID)
 	if err != nil {
 		return nil, err
@@ -88,8 +90,40 @@ func (s *cardsService) GenerateMultipleCards(userID uuid.UUID, userPrompt string
 		simpleCards = append(simpleCards, SimpleCardResponseDTO{
 			Title:   card.Title,
 			Content: card.Content,
+			Status:  CardStatusUndone,
 		})
 	}
 
 	return simpleCards, nil
+}
+
+func (s *cardsService) Update(userID uuid.UUID, cardID uuid.UUID, dto UpdateCardDTO) (SimpleCardResponseDTO, error) {
+	card, err := s.Repository.FindByID(cardID)
+	if err != nil {
+		return SimpleCardResponseDTO{}, err
+	}
+
+	if card.UserID != userID {
+		return SimpleCardResponseDTO{}, errors.New("unauthorized")
+	}
+
+	if dto.Title != nil {
+		card.Title = *dto.Title
+	}
+	if dto.Content != nil {
+		card.Content = *dto.Content
+	}
+	if dto.Status != nil {
+		card.Status = string(*dto.Status)
+	}
+
+	if err := s.Repository.Update(&card); err != nil {
+		return SimpleCardResponseDTO{}, err
+	}
+
+	return SimpleCardResponseDTO{
+		Title:   card.Title,
+		Content: card.Content,
+		Status:  cardStatus(card.Status),
+	}, nil
 }

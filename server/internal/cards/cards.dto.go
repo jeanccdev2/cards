@@ -9,8 +9,9 @@ const (
 )
 
 type SimpleCardResponseDTO struct {
-	Title   string `json:"title" binding:"required"`
-	Content string `json:"content" binding:"required"`
+	Title   string     `json:"title" binding:"required"`
+	Content string     `json:"content" binding:"required"`
+	Status  cardStatus `json:"status" binding:"oneof=undone doing done"`
 }
 
 type CreateCardDTO struct {

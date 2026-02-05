@@ -14,6 +14,7 @@ type CardsHandler interface {
 	Create(c *gin.Context)
 	CreateMultiple(c *gin.Context)
 	GenerateMultipleCards(c *gin.Context)
+	Update(c *gin.Context)
 }
 
 type cardsHandler struct {
@@ -31,7 +32,7 @@ func (h *cardsHandler) List(c *gin.Context) {
 		return
 	}
 
-	cards, err := h.Service.List(userID)
+	cards, err := h.Service.List(uuid.MustParse(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, types.NewApiResponse(http.StatusInternalServerError, "Failed to list cards", nil, err.Error()))
 		return
@@ -131,6 +132,63 @@ func (h *cardsHandler) GenerateMultipleCards(c *gin.Context) {
 		http.StatusCreated,
 		"Cards generated successfully",
 		cards,
+		nil,
+	))
+}
+
+func (h *cardsHandler) Update(c *gin.Context) {
+	userID := c.GetString("userID")
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, types.NewApiResponse(
+			http.StatusBadRequest,
+			"User ID is required",
+			nil,
+			"User ID is empty",
+		))
+		return
+	}
+
+	var dto UpdateCardDTO
+	if err := c.ShouldBindJSON(&dto); err != nil {
+		c.JSON(http.StatusBadRequest, types.NewApiResponse(
+			http.StatusBadRequest,
+			"Invalid request payload",
+			nil,
+			err.Error(),
+		))
+		return
+	}
+
+	cardID := c.Param("cardID")
+	if cardID == "" {
+		c.JSON(http.StatusBadRequest, types.NewApiResponse(
+			http.StatusBadRequest,
+			"Card ID is required",
+			nil,
+			"Card ID is empty",
+		))
+		return
+	}
+
+	card, err := h.Service.Update(
+		uuid.MustParse(userID),
+		uuid.MustParse(cardID),
+		dto,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, types.NewApiResponse(
+			http.StatusInternalServerError,
+			"Failed to update card",
+			nil,
+			err.Error(),
+		))
+		return
+	}
+
+	c.JSON(http.StatusOK, types.NewApiResponse(
+		http.StatusOK,
+		"Card updated successfully",
+		card,
 		nil,
 	))
 }
