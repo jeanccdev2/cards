@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { CardForm } from "@/components/cards/CardForm";
-import { CardStatus, SimpleCard } from "@/types";
+import { SimpleCard } from "@/types";
 import { toast } from "sonner";
 import cardsService from "@/services/cardsService";
 
@@ -19,11 +18,9 @@ const CreateCard = () => {
   };
 
   return (
-    <DashboardLayout>
       <div className="max-w-2xl mx-auto">
         <CardForm onSubmit={handleSubmit} />
       </div>
-    </DashboardLayout>
   );
 };
 

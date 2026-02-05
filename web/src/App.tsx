@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import CreateCard from "./pages/CreateCard";
 import EditCard from "./pages/EditCard";
 import NotFound from "./pages/NotFound";
+import { MainLayout } from "./layouts/main.layout";
 
 const queryClient = new QueryClient();
 
@@ -69,30 +70,32 @@ const App = () => (
               </PublicRoute>
             }
           />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/cards/new"
-            element={
-              <ProtectedRoute>
-                <CreateCard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/cards/:id/edit"
-            element={
-              <ProtectedRoute>
-                <EditCard />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/dashboard" element={<MainLayout />}>
+            <Route
+              index
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/cards/new"
+              element={
+                <ProtectedRoute>
+                  <CreateCard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/cards/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <EditCard />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -22,7 +22,7 @@ export const CardItem = ({ card }: CardItemProps) => {
   const navigate = useNavigate();
 
   const handleEdit = () => {
-    navigate(`/cards/${card.id}/edit`);
+    navigate(`/dashboard/cards/${card.id}/edit`);
   };
 
   const handleDelete = () => {

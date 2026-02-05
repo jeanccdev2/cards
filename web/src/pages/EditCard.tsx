@@ -1,5 +1,4 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { CardForm } from "@/components/cards/CardForm";
 import { Card, CardStatus, SimpleCard } from "@/types";
 import { toast } from "sonner";
@@ -32,13 +31,11 @@ const EditCard = () => {
   };
 
   return (
-    <DashboardLayout>
       <div className="max-w-2xl mx-auto">
         {card && (
           <CardForm initialData={card} onSubmit={handleSubmit} isEditing />
         )}
       </div>
-    </DashboardLayout>
   );
 };
 

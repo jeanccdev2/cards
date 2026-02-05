@@ -61,7 +61,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -72,7 +72,7 @@ const Dashboard = () => {
             </p>
           </div>
           <Button
-            onClick={() => navigate("/cards/new")}
+            onClick={() => navigate("/dashboard/cards/new")}
             className="gradient-primary"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -132,7 +132,7 @@ const Dashboard = () => {
                 : "Não há cards com este status."}
             </p>
             {filter === "all" && (
-              <Button onClick={() => navigate("/cards/new")}>
+              <Button onClick={() => navigate("/dashboard/cards/new")}>
                 <Plus className="h-4 w-4 mr-2" />
                 Criar primeiro card
               </Button>
@@ -150,7 +150,7 @@ const Dashboard = () => {
         onOpenChange={setIsRecordingModalOpen}
         onCardsGenerated={handleCardsGenerated}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

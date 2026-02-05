@@ -28,7 +28,7 @@
  
    const navItems = [
      { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-     { label: 'Novo Card', href: '/cards/new', icon: Plus },
+     { label: 'Novo Card', href: '/dashboard/cards/new', icon: Plus },
    ];
  
    return (
