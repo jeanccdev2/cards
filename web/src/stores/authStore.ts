@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { User } from '@/types';
-import { authService } from '@/services/authService';
+import { create } from "zustand";
+import { User } from "@/types";
+import authService from "@/services/authService";
 
 interface AuthState {
   user: User | null;
@@ -9,38 +9,42 @@ interface AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  forgotPassword: (email: string) => Promise<boolean>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
 
   login: async (email: string, password: string): Promise<boolean> => {
     set({ isLoading: true });
-    
+
     const response = await authService.login({ email, password });
-    
+
     if (response.success && response.user) {
       set({ user: response.user, isAuthenticated: true, isLoading: false });
       return true;
     }
-    
+
     set({ isLoading: false });
     return false;
   },
 
-  register: async (name: string, email: string, password: string): Promise<boolean> => {
+  register: async (
+    name: string,
+    email: string,
+    password: string,
+  ): Promise<boolean> => {
     set({ isLoading: true });
-    
+
     const response = await authService.register({ name, email, password });
-    
-    if (response.success && response.user) {
-      set({ user: response.user, isAuthenticated: true, isLoading: false });
+
+    if (response.success) {
+      await get().login(email, password);
+      set({ isAuthenticated: true, isLoading: false });
       return true;
     }
-    
+
     set({ isLoading: false });
     return false;
   },
@@ -48,15 +52,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     authService.logout();
     set({ user: null, isAuthenticated: false });
-  },
-
-  forgotPassword: async (email: string): Promise<boolean> => {
-    set({ isLoading: true });
-    
-    const response = await authService.forgotPassword(email);
-    
-    set({ isLoading: false });
-    return response.success;
   },
 }));
 

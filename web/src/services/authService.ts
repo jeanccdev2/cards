@@ -1,69 +1,86 @@
-import { User } from '@/types';
-import { mockUser } from '@/lib/mockData';
+import { ApiResponse, User } from "@/types";
+import { mockUser } from "@/lib/mockData";
+import { api } from "@/config/api";
 
-export interface LoginRequest {
+export type LoginRequest = {
   email: string;
   password: string;
-}
+};
 
-export interface RegisterRequest {
-  name: string;
-  email: string;
-  password: string;
-}
+export type ApiLoginResponse = {
+  token: string;
+  user: User;
+};
 
-export interface AuthResponse {
+export type LoginResponse = {
   success: boolean;
   user?: User;
   error?: string;
-}
+};
 
 // Simula delay de rede
-const simulateNetworkDelay = (ms: number = 800) => 
-  new Promise(resolve => setTimeout(resolve, ms));
+const simulateNetworkDelay = (ms: number = 800) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
-export const authService = {
-  async login({ email, password }: LoginRequest): Promise<AuthResponse> {
-    await simulateNetworkDelay();
+async function login({
+  email,
+  password,
+}: LoginRequest): Promise<LoginResponse> {
+  try {
+    const { data } = await api.post<ApiResponse<ApiLoginResponse>>(
+      "/auth/login",
+      {
+        email,
+        password,
+      },
+    );
 
-    // Mock: aceita qualquer email/senha válidos
-    if (email && password) {
-      const user: User = { ...mockUser, email };
-      return { success: true, user };
-    }
+    localStorage.setItem("token", data.data?.token || "");
 
-    return { success: false, error: 'Email ou senha inválidos' };
-  },
+    return { success: true, user: data.data?.user || mockUser };
+  } catch (error) {
+    console.error("authService login error: ", error);
+    return { success: false, error: "Erro ao registrar usuário" };
+  }
+}
 
-  async register({ name, email, password }: RegisterRequest): Promise<AuthResponse> {
-    await simulateNetworkDelay();
+export type RegisterRequest = {
+  name: string;
+  email: string;
+  password: string;
+};
 
-    // Mock: valida campos obrigatórios
-    if (!name || !email || !password) {
-      return { success: false, error: 'Todos os campos são obrigatórios' };
-    }
+export type ApiRegisterResponse = User;
 
-    if (password.length < 6) {
-      return { success: false, error: 'A senha deve ter pelo menos 6 caracteres' };
-    }
+export type RegisterResponse = {
+  success: boolean;
+  error?: string;
+};
 
-    const user: User = { ...mockUser, name, email };
-    return { success: true, user };
-  },
+async function register({
+  name,
+  email,
+  password,
+}: RegisterRequest): Promise<RegisterResponse> {
+  try {
+    await api.post<ApiResponse<ApiRegisterResponse>>("/auth/register", {
+      name,
+      email,
+      password,
+    });
 
-  async forgotPassword(email: string): Promise<{ success: boolean; error?: string }> {
-    await simulateNetworkDelay();
-
-    if (!email) {
-      return { success: false, error: 'Email é obrigatório' };
-    }
-
-    // Mock: simula envio de email
     return { success: true };
-  },
+  } catch (error) {
+    return { success: false, error: "Erro ao registrar usuário" };
+  }
+}
 
-  async logout(): Promise<void> {
-    await simulateNetworkDelay(200);
-    // Mock: limpa sessão (no futuro, invalida token no backend)
-  },
+async function logout(): Promise<void> {
+  localStorage.removeItem("token");
+}
+
+export default {
+  login,
+  register,
+  logout,
 };
