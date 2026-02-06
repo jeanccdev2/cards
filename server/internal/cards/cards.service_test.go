@@ -59,6 +59,10 @@ func (r *fakeCardsRepository) Update(card *models.Card) error {
 	return nil
 }
 
+func (r *fakeCardsRepository) Delete(id uuid.UUID) error {
+	return nil
+}
+
 func TestCardsService_List(t *testing.T) {
 	userID := uuid.New()
 	expected := []models.Card{{Title: "t1"}, {Title: "t2"}}
@@ -173,4 +177,3 @@ func TestCardsService_Update(t *testing.T) {
 		}
 	})
 }
-

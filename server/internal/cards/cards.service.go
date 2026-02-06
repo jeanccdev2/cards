@@ -13,11 +13,12 @@ import (
 
 type CardsService interface {
 	List(userID uuid.UUID) ([]models.Card, error)
-	GetByID(cardID uuid.UUID) (models.Card, error)
-	Create(userID uuid.UUID, dto CreateCardDTO) (models.Card, error)
+	GetByID(cardID uuid.UUID) (*models.Card, error)
+	Create(userID uuid.UUID, dto CreateCardDTO) (*models.Card, error)
 	CreateMultiple(userID uuid.UUID, dto []CreateCardDTO) ([]models.Card, error)
 	GenerateMultipleCards(userID uuid.UUID, userPrompt string) ([]SimpleCardResponseDTO, error)
-	Update(userID uuid.UUID, cardID uuid.UUID, dto UpdateCardDTO) (SimpleCardResponseDTO, error)
+	Update(userID uuid.UUID, cardID uuid.UUID, dto UpdateCardDTO) (*SimpleCardResponseDTO, error)
+	Delete(userID uuid.UUID, cardID uuid.UUID) (*SimpleCardResponseDTO, error)
 }
 
 type cardsService struct {
@@ -38,15 +39,15 @@ func (s *cardsService) List(userID uuid.UUID) ([]models.Card, error) {
 	return cards, nil
 }
 
-func (s *cardsService) GetByID(cardID uuid.UUID) (models.Card, error) {
+func (s *cardsService) GetByID(cardID uuid.UUID) (*models.Card, error) {
 	card, err := s.Repository.FindByID(cardID)
 	if err != nil {
-		return models.Card{}, err
+		return nil, err
 	}
-	return card, nil
+	return &card, nil
 }
 
-func (s *cardsService) Create(userID uuid.UUID, dto CreateCardDTO) (models.Card, error) {
+func (s *cardsService) Create(userID uuid.UUID, dto CreateCardDTO) (*models.Card, error) {
 	card := models.Card{
 		Title:   dto.Title,
 		Content: dto.Content,
@@ -55,10 +56,10 @@ func (s *cardsService) Create(userID uuid.UUID, dto CreateCardDTO) (models.Card,
 	}
 
 	if err := s.Repository.Create(&card); err != nil {
-		return models.Card{}, err
+		return nil, err
 	}
 
-	return card, nil
+	return &card, nil
 }
 
 func (s *cardsService) CreateMultiple(userID uuid.UUID, dto []CreateCardDTO) ([]models.Card, error) {
@@ -106,14 +107,14 @@ func (s *cardsService) GenerateMultipleCards(userID uuid.UUID, userPrompt string
 	return simpleCards, nil
 }
 
-func (s *cardsService) Update(userID uuid.UUID, cardID uuid.UUID, dto UpdateCardDTO) (SimpleCardResponseDTO, error) {
+func (s *cardsService) Update(userID uuid.UUID, cardID uuid.UUID, dto UpdateCardDTO) (*SimpleCardResponseDTO, error) {
 	card, err := s.Repository.FindByID(cardID)
 	if err != nil {
-		return SimpleCardResponseDTO{}, err
+		return nil, err
 	}
 
 	if card.UserID != userID {
-		return SimpleCardResponseDTO{}, errors.New("unauthorized")
+		return nil, errors.New("unauthorized")
 	}
 
 	if dto.Title != nil {
@@ -127,10 +128,31 @@ func (s *cardsService) Update(userID uuid.UUID, cardID uuid.UUID, dto UpdateCard
 	}
 
 	if err := s.Repository.Update(&card); err != nil {
-		return SimpleCardResponseDTO{}, err
+		return nil, err
 	}
 
-	return SimpleCardResponseDTO{
+	return &SimpleCardResponseDTO{
+		Title:   card.Title,
+		Content: card.Content,
+		Status:  cardStatus(card.Status),
+	}, nil
+}
+
+func (s *cardsService) Delete(userID uuid.UUID, cardID uuid.UUID) (*SimpleCardResponseDTO, error) {
+	card, err := s.Repository.FindByID(cardID)
+	if err != nil {
+		return nil, err
+	}
+
+	if card.UserID != userID {
+		return nil, errors.New("unauthorized")
+	}
+
+	if err := s.Repository.Delete(cardID); err != nil {
+		return nil, err
+	}
+
+	return &SimpleCardResponseDTO{
 		Title:   card.Title,
 		Content: card.Content,
 		Status:  cardStatus(card.Status),

@@ -13,6 +13,7 @@ type CardsRepository interface {
 	Create(*models.Card) error
 	CreateMultiple([]models.Card) error
 	Update(*models.Card) error
+	Delete(uuid.UUID) error
 }
 
 type cardsRepository struct {
@@ -49,4 +50,12 @@ func (r *cardsRepository) CreateMultiple(cards []models.Card) error {
 
 func (r *cardsRepository) Update(card *models.Card) error {
 	return r.db.Save(card).Error
+}
+
+func (r *cardsRepository) Delete(id uuid.UUID) error {
+	return r.db.Delete(&models.Card{
+		Base: models.Base{
+			ID: id,
+		},
+	}).Error
 }

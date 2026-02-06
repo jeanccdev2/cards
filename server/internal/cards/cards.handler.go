@@ -1,7 +1,6 @@
 package cards
 
 import (
-	"cards/internal/models"
 	"cards/internal/types"
 	"net/http"
 
@@ -16,6 +15,7 @@ type CardsHandler interface {
 	CreateMultiple(c *gin.Context)
 	GenerateMultipleCards(c *gin.Context)
 	Update(c *gin.Context)
+	Delete(c *gin.Context)
 }
 
 type cardsHandler struct {
@@ -58,8 +58,6 @@ func (h *cardsHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, types.NewApiResponse(http.StatusOK, "Card retrieved successfully", card, nil))
 }
 
-
-
 func (h *cardsHandler) Create(c *gin.Context) {
 	userID := c.GetString("userID")
 	if userID == "" {
@@ -73,15 +71,14 @@ func (h *cardsHandler) Create(c *gin.Context) {
 		return
 	}
 
-	card := models.Card{
-		Title:   dto.Title,
-		Content: dto.Content,
-		Status:  string(CardStatusUndone),
-	}
-
 	card, err := h.Service.Create(uuid.MustParse(userID), dto)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, types.NewApiResponse(http.StatusInternalServerError, "Failed to create card", nil, err.Error()))
+		c.JSON(http.StatusInternalServerError, types.NewApiResponse(
+			http.StatusInternalServerError,
+			"Failed to create card",
+			nil,
+			err.Error(),
+		))
 		return
 	}
 
@@ -193,6 +190,51 @@ func (h *cardsHandler) Update(c *gin.Context) {
 		uuid.MustParse(userID),
 		uuid.MustParse(cardID),
 		dto,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, types.NewApiResponse(
+			http.StatusInternalServerError,
+			"Failed to update card",
+			nil,
+			err.Error(),
+		))
+		return
+	}
+
+	c.JSON(http.StatusOK, types.NewApiResponse(
+		http.StatusOK,
+		"Card updated successfully",
+		card,
+		nil,
+	))
+}
+
+func (h *cardsHandler) Delete(c *gin.Context) {
+	userID := c.GetString("userID")
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, types.NewApiResponse(
+			http.StatusBadRequest,
+			"User ID is required",
+			nil,
+			"User ID is empty",
+		))
+		return
+	}
+
+	cardID := c.Param("cardID")
+	if cardID == "" {
+		c.JSON(http.StatusBadRequest, types.NewApiResponse(
+			http.StatusBadRequest,
+			"Card ID is required",
+			nil,
+			"Card ID is empty",
+		))
+		return
+	}
+
+	card, err := h.Service.Delete(
+		uuid.MustParse(userID),
+		uuid.MustParse(cardID),
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, types.NewApiResponse(
