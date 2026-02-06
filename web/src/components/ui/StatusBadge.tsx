@@ -22,7 +22,6 @@
  };
  
  export const StatusBadge = ({ status, className }: StatusBadgeProps) => {
-  console.log(status);
    const config = statusConfig[status];
    
    return (

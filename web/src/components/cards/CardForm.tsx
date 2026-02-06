@@ -30,7 +30,6 @@ export const CardForm = ({
   isEditing = false,
 }: CardFormProps) => {
   const navigate = useNavigate();
-  console.log(initialData);
   const [title, setTitle] = useState(initialData?.title || "");
   const [content, setContent] = useState(initialData?.content || "");
   const [status, setStatus] = useState<CardStatus>(
