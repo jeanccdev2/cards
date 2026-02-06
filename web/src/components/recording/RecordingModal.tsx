@@ -134,7 +134,14 @@ export const RecordingModal = ({
   };
 
   const handleConfirm = async () => {
-    const response = await cardsService.createMultipleCards(generatedCards);
+    const cardsToCreate = generatedCards.filter((_, idx) =>
+      selectedCards.has(idx),
+    );
+    if (cardsToCreate.length === 0) {
+      toast.error("Selecione pelo menos um card para confirmar.");
+      return;
+    }
+    const response = await cardsService.createMultipleCards(cardsToCreate);
     if (!response.success) {
       toast.error(response.error || "Erro ao criar cards. Tente novamente.");
       return;
@@ -154,8 +161,7 @@ export const RecordingModal = ({
             {state === "results" && "Cards Gerados"}
           </DialogTitle>
         </DialogHeader>
-
-        <div className="flex-1 overflow-hidden py-4">
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden py-4">
           {(state === "idle" || state === "recording") && (
             <div className="flex flex-col items-center gap-6">
               <button
@@ -225,7 +231,7 @@ export const RecordingModal = ({
           )}
 
           {state === "results" && (
-            <div className="flex flex-col h-full animate-fade-in">
+            <div className="flex flex-col h-full min-h-0 animate-fade-in">
               <p className="text-sm text-muted-foreground text-center mb-3 flex-shrink-0">
                 Selecione os cards que deseja criar:
               </p>
