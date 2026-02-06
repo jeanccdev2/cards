@@ -20,6 +20,8 @@ services:
     working_dir: /app
     volumes:
       - .:/app
+      - go_mod_cache:/go/pkg/mod
+      - go_build_cache:/root/.cache/go-build
     command: go run cmd/api/main.go
     ports:
       - "8000:8080"
@@ -32,3 +34,5 @@ services:
 
 volumes:
   postgres_data:
+  go_mod_cache:
+  go_build_cache:

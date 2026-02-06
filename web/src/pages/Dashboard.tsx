@@ -102,7 +102,7 @@ const Dashboard = () => {
                 className="animate-fade-in"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <CardItem card={card} />
+                <CardItem card={card} onDeleteCard={listCards} />
               </div>
             ))}
           </div>

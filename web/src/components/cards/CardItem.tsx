@@ -16,9 +16,10 @@ import { toast } from "sonner";
 
 interface CardItemProps {
   card: Card;
+  onDeleteCard: () => void;
 }
 
-export const CardItem = ({ card }: CardItemProps) => {
+export const CardItem = ({ card, onDeleteCard }: CardItemProps) => {
   const navigate = useNavigate();
 
   const handleEdit = () => {
@@ -33,7 +34,7 @@ export const CardItem = ({ card }: CardItemProps) => {
           return;
         }
         toast.success("Card excluído com sucesso");
-        navigate("/dashboard");
+        onDeleteCard();
       });
     }
   };
@@ -56,7 +57,7 @@ export const CardItem = ({ card }: CardItemProps) => {
           <span className="text-xs text-muted-foreground">
             {format(card.created_at, "d 'de' MMM, yyyy", { locale: ptBR })}
           </span>
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex gap-1 md:opacity-0 md:group-hover:opacity-100 md:transition-opacity">
             <Button
               variant="ghost"
               size="icon"

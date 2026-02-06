@@ -109,7 +109,7 @@ export type DeleteCardResponse = {
 
 async function deleteCard(id: string): Promise<DeleteCardResponse> {
   try {
-    await api.delete(`/cards/update/${id}`);
+    await api.delete(`/cards/delete/${id}`);
 
     return {
       success: true,
