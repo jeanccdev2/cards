@@ -69,8 +69,17 @@ export const RecordingModal = ({
   const handleStartRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/ogg;codecs=opus")
+          ? "audio/ogg;codecs=opus"
+          : "";
 
-      const mediaRecorder = new MediaRecorder(stream);
+      const mediaRecorder = new MediaRecorder(
+        stream,
+        mimeType ? { mimeType } : undefined,
+      );
+
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -99,7 +108,7 @@ export const RecordingModal = ({
 
     mediaRecorder.onstop = async () => {
       const audioBlob = new Blob(audioChunksRef.current, {
-        type: "audio/webm",
+        type: mediaRecorder.mimeType,
       });
 
       try {
