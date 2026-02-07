@@ -102,9 +102,14 @@ export const RecordingModal = ({
         type: "audio/webm",
       });
 
-      const transcribedText = await audioService.transcribe(audioBlob);
-      setPromptTranscribed(transcribedText);
-      setState("analyze_prompt");
+      try {
+        const transcribedText = await audioService.transcribe(audioBlob);
+        setPromptTranscribed(transcribedText);
+        setState("analyze_prompt");
+      } catch (err) {
+        alert(err);
+        setState("idle");
+      }
     };
   };
 
