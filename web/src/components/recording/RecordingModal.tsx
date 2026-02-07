@@ -107,7 +107,11 @@ export const RecordingModal = ({
         setPromptTranscribed(transcribedText);
         setState("analyze_prompt");
       } catch (err) {
-        alert(err.message);
+        alert(
+          Object.keys(err).map((key, value) =>
+            `${key}: ${value}`.trim().replace(/\s+/g, " "),
+          ),
+        );
         setState("idle");
       }
     };
