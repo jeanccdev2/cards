@@ -107,7 +107,7 @@ export const RecordingModal = ({
         setPromptTranscribed(transcribedText);
         setState("analyze_prompt");
       } catch (err) {
-        alert(err);
+        alert(err.message);
         setState("idle");
       }
     };
